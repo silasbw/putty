@@ -32,14 +32,16 @@ extendedKeyUsage = clientAuth, serverAuth
 EOF
 
 # Create a certificate authority
-openssl genrsa -out caKey.pem 2048
-openssl req -x509 -new -nodes -key caKey.pem -days 100000 -out caCert.pem -subj "/CN=${CN_BASE}_ca"
+#openssl genrsa -out caKey.pem 2048
+#openssl req -x509 -new -nodes -key caKey.pem -days 100000 -out caCert.pem -subj "/CN=${CN_BASE}_ca"
 
 # Create a server certiticate
 openssl genrsa -out serverKey.pem 2048
 # Note the CN is the DNS name of the service of the webhook.
-openssl req -new -key serverKey.pem -out server.csr -subj "/CN=external-secrets-webhook.default.svc" -config server.conf
+openssl req -new -key serverKey.pem -out server.csr -subj "/CN=putty.default.svc" -config server.conf
 openssl x509 -req -in server.csr -CA caCert.pem -CAkey caKey.pem -CAcreateserial -out serverCert.pem -days 100000 -extensions v3_req -extfile server.conf
+
+exit 0
 
 outfile=certs.go
 
@@ -72,7 +74,7 @@ for file in caKey caCert serverKey serverCert; do
 done
 
 # Clean up after we're done.
-#rm *.pem
-#rm *.csr
-#rm *.srl
-#rm *.conf
+rm *.pem
+rm *.csr
+rm *.srl
+rm *.conf
