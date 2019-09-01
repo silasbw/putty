@@ -1,0 +1,58 @@
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata: {name: putty}
+webhooks:
+- admissionReviewVersions: [v1beta1]
+  clientConfig:
+    caBundle: 'LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURRVENDQWltZ0F3SUJBZ0lVSEZWNnhqdVQ1
+
+      K0d6OUpXb1Y0S043Yjc2bVVVd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0x6RXRNQ3NHQTFVRUF3d2ta
+
+      MlZ1WlhKcFkxOTNaV0pvYjI5clgyRmtiV2x6YzJsdmJsOWxlR0Z0Y0d4bApYMk5oTUNBWERURTVN
+
+      RGt3TVRFMU1UVTFNbG9ZRHpJeU9UTXdOakUyTVRVeE5UVXlXakF2TVMwd0t3WURWUVFECkRDUm5a
+
+      VzVsY21salgzZGxZbWh2YjJ0ZllXUnRhWE56YVc5dVgyVjRZVzF3YkdWZlkyRXdnZ0VpTUEwR0NT
+
+      cUcKU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ3ZrU3Uybm05VnQrN25TT01pdVBHSnQx
+
+      Q21zdHlWTnBFVwpMcjU3djlTK1gvemNnOUtCNm94MmVLMHRUcFVYOEg4aWpyNGxUbXZMTEQvV29l
+
+      SytycmVqdzN5TXpCUW9mdmsxCmU2dndUd2N0M2ZTem5ES0czeld3MEJWaW10ZW9DV3B3TjUvaTJr
+
+      MnlVa0Q3UW4yMGZrWUJBSnlnWE1JalBhZGkKTmxqb3djTFNub1ljR0I0VUlRcVk1ZHA2dnUxemZ1
+
+      djY2UHZ2SWdKK3lMY1NSQ2pVZjk4YVBkOHdaUllkbmwwSAp2Wk5PMmNDUVJMYjBWWlNIRkxMaUFS
+
+      NzRSSW5JSHJZZUg0a3RaVEFWck41Q0NmT1owbURraW56UXR2cmxkTnIrCkMxZEdtalNhbUhmbU94
+
+      Y0tPZFdsRmJlcHRXT1ZrVHhQTVRnRHF1YXZNdTNGT1BlZzRHdXJBZ01CQUFHalV6QlIKTUIwR0Ex
+
+      VWREZ1FXQkJTWTBuUnd3bSt2T3lxZmtlbCtVU0ZOSjdWOE16QWZCZ05WSFNNRUdEQVdnQlNZMG5S
+
+      dwp3bSt2T3lxZmtlbCtVU0ZOSjdWOE16QVBCZ05WSFJNQkFmOEVCVEFEQVFIL01BMEdDU3FHU0li
+
+      M0RRRUJDd1VBCkE0SUJBUUNacVNHbldwWnlYekJVRnpoRXZvWkhzUGkzM0Z3NnVERFpyMmxkcEdz
+
+      M094a0U0VHNQVjFzZFpuVk8KMzRUUGpPL3ZsSWVCaHdjRmhwWlJhTVd0SmhQNEgvcnpBZ1RMbGdG
+
+      NG1ydEdENFVCSzUwVU03Z2ttamQvejlRNgpubWdRVGxTTG04bXJQcGFzUXJ5c2JBa0dscEx0d2JJ
+
+      bnhTdnYvdFFTb2hxSWI1czhzc2Mxc1g2ZEpidHlmQWYyCnZGdkVTbEFwZVV4U1dUU3ozWllZVDJo
+
+      aG1zZVVvYmxqRkpQS3pKelp5UmluTDB2NFpDNEg4VXY0WG9NdjBEQ1QKazZCekNjK1M4NlVNMVh3
+
+      SFg3Y2kxYVBkcDNCbDk5VW5jY0lmNTQ1ZlRCU3Jia29vREVGazZkU1Q1ZXFORTBFQQpZdlhsK1Q3
+
+      dTZsK2s3VndUd1pPZmc4UWh3akpnCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+
+      '
+    service: {name: putty, namespace: default}
+  name: putty-example.kubernetes.io
+  rules:
+  - apiGroups: ['*']
+    apiVersions: ['*']
+    operations: ['*']
+    resources: ['*/*']
+    scope: '*'
+  timeoutSeconds: 1
