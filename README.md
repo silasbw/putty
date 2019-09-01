@@ -10,6 +10,18 @@ in kubernetes cluster to register remote webhook admission controllers.
 go build
 ```
 
+## Run locally
+
+```
+./putty -tls=false -port=8080
+```
+
+## Run on minikube
+
+```
+./init.sh
+```
+
 ## Publish
 
 ```
