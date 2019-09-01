@@ -48,7 +48,7 @@ webhooks:
 
       '
     service: {name: putty, namespace: default}
-  name: pod-policy.example.io
+  name: putty-example.kubernetes.io
   rules:
   - apiGroups: ['*']
     apiVersions: ['*']
