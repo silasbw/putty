@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: putty
+  labels:
+    name: putty
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: putty
+  template:
+    metadata:
+      labels:
+        name: putty
+        service: putty
+    spec:
+      containers:
+        - name: putty
+          image: "silasbw/putty:test"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 443
