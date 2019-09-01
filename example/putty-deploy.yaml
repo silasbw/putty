@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: putty
-          image: "silasbw/putty:test"
+          image: "silasbw/putty:latest"
           imagePullPolicy: Always
           ports:
             - containerPort: 443

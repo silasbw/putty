@@ -1,4 +1,4 @@
-module github.com/silasbw/external-secrets-webhook
+module github.com/silasbw/putty
 
 go 1.12
 
