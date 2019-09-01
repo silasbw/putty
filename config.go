@@ -27,6 +27,8 @@ import (
 type Config struct {
 	CertFile string
 	KeyFile  string
+	TLS bool
+	Port string
 }
 
 func (c *Config) addFlags() {
@@ -36,6 +38,8 @@ func (c *Config) addFlags() {
 		"after server cert).")
 	flag.StringVar(&c.KeyFile, "tls-private-key-file", "key.pem", ""+
 		"File containing the default x509 private key matching --tls-cert-file.")
+	flag.BoolVar(&c.TLS, "tls", true, "Enable TLS")
+	flag.StringVar(&c.Port, "port", "433", "Port")
 }
 
 func configTLS(config Config) *tls.Config {
