@@ -16,6 +16,6 @@ FROM debian:jessie
 
 COPY certs/serverKey.pem /serverKey.pem
 COPY certs/serverCert.pem /serverCert.pem
-COPY external-secrets-webhook /webhook
+COPY putty /webhook
 
 ENTRYPOINT ["/webhook", "-tls-cert-file", "serverCert.pem", "-tls-private-key-file", "serverKey.pem"]

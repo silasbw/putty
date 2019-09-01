@@ -4,12 +4,17 @@ The image tests MutatingAdmissionWebhook and ValidatingAdmissionWebhook. After d
 it to kubernetes cluster, administrator needs to create a ValidatingWebhookConfiguration
 in kubernetes cluster to register remote webhook admission controllers.
 
-TODO: add the reference when the document for admission webhook v1beta1 API is done.
+## Build
 
-## Build the code
+```
+go build
+```
 
-```bash
-make build
+## Publish
+
+```
+docker build -t silasbw/putty:latest .
+docker push silasbw/putty:latest
 ```
 
 ## Notes
