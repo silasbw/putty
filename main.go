@@ -133,6 +133,7 @@ func serveCRD(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var config Config
+
 	config.addFlags()
 	flag.Parse()
 	
@@ -148,21 +149,20 @@ func main() {
 	http.HandleFunc("/crd", serveCRD)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("handling request to /")
-		klog.V(2).Info(fmt.Sprintf("handling request to /"))
-		fmt.Fprintf(w, "Hello")
+		klog.Info("handling request to /")
+		fmt.Fprintf(w, "Something..")
 	})
-	
+
 	if true {
 		server := &http.Server{
 			Addr:      ":443",
 			TLSConfig: configTLS(config),
 		}
-		server.ListenAndServeTLS("", "")
+		klog.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
 		server := &http.Server{
 			Addr:      ":8080",
 		}
-		server.ListenAndServe()
+		klog.Fatal(server.ListenAndServe())
 	}
 }

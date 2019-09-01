@@ -30,10 +30,11 @@ type Config struct {
 }
 
 func (c *Config) addFlags() {
-	flag.StringVar(&c.CertFile, "tls-cert-file", c.CertFile, ""+
+	klog.InitFlags(nil)
+	flag.StringVar(&c.CertFile, "tls-cert-file", "cert.pem", ""+
 		"File containing the default x509 Certificate for HTTPS. (CA cert, if any, concatenated "+
 		"after server cert).")
-	flag.StringVar(&c.KeyFile, "tls-private-key-file", c.KeyFile, ""+
+	flag.StringVar(&c.KeyFile, "tls-private-key-file", "key.pem", ""+
 		"File containing the default x509 private key matching --tls-cert-file.")
 }
 
