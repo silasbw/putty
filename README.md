@@ -6,7 +6,7 @@ Interpose on Kubernetes operations and apply a [JSON patch](http://jsonpatch.com
 
 ### Add [initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
 
-[example/] adds an initContainer to every Pod with a label matching `putt.sbw.io: "true"`.
+[example/](example/) adds an initContainer to every Pod with a label matching `putt.sbw.io: "true"`.
 
 ## Build
 
