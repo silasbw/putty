@@ -149,7 +149,15 @@ func main() {
 	http.HandleFunc("/crd", serveCRD)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		klog.Info(fmt.Sprintf("Unexpected request: %s %s", r.Method, r.URL))
+		klog.Info(fmt.Sprintf("Unexpected request: %s %s %s",
+			r.Method,
+			r.Header.Get("Content-Type"),
+			r.URL))
+		if r.Body != nil {
+			if data, err := ioutil.ReadAll(r.Body); err == nil {
+				klog.Info(fmt.Sprintf("%s", data))
+			}
+		}
 		w.WriteHeader(404)
 	})
 
