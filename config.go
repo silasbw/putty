@@ -39,7 +39,7 @@ func (c *Config) addFlags() {
 	flag.StringVar(&c.KeyFile, "tls-private-key-file", "key.pem", ""+
 		"File containing the default x509 private key matching --tls-cert-file.")
 	flag.BoolVar(&c.TLS, "tls", true, "Enable TLS")
-	flag.StringVar(&c.Port, "port", "433", "Port")
+	flag.StringVar(&c.Port, "port", "443", "Port")
 }
 
 func configTLS(config Config) *tls.Config {

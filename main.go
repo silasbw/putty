@@ -149,19 +149,19 @@ func main() {
 	http.HandleFunc("/crd", serveCRD)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		klog.Info("handling request to ", r.URL)
-		fmt.Fprintf(w, "Something..")
+		klog.Info(fmt.Sprintf("Unexpected request: %s %s", r.Method, r.URL))
+		w.WriteHeader(404)
 	})
 
 	if config.TLS {
-		klog.Info(fmt.Sprintf("Listening on %s with TLS", config.Port))
+		klog.Info(fmt.Sprintf("Listening on :%s with TLS", config.Port))
 		server := &http.Server{
 			Addr: fmt.Sprintf(":%s", config.Port),
 			TLSConfig: configTLS(config),
 		}
 		klog.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
-		klog.Info(fmt.Sprintf("Listening on %s without TLS", config.Port))
+		klog.Info(fmt.Sprintf("Listening on :%s without TLS", config.Port))
 		klog.Info("TLS is REQUIRED for Kubernetes Webhooks")
 		server := &http.Server{
 			Addr: fmt.Sprintf(":%s", config.Port),
