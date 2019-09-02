@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: putty
+data:
+  JSON_PATCH: |
+    [{"op":"add","path":"/spec/initContainers","value":[{"image":"busybox:1.28","name":"webhook-added-init-container", "command": ["sh", "-c", "echo The app is running! && sleep 10"], "resources":{}}]}]

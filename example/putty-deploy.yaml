@@ -21,3 +21,6 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 443
+          envFrom:
+            - configMapRef:
+                name: putty
