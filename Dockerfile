@@ -21,4 +21,4 @@ COPY putty /webhook
 ENTRYPOINT ["/webhook", \
            "-tls-cert-file", "serverCert.pem", \
            "-tls-private-key-file", "serverKey.pem", \
-           "-v", "1"]
+           "-v", "3"]

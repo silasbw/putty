@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog"
@@ -131,6 +132,31 @@ func serveCRD(w http.ResponseWriter, r *http.Request) {
 	serve(w, r, admitCRD)
 }
 
+func mutate(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+	klog.V(2).Info("mutating pods")
+	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
+	if ar.Request.Resource != podResource {
+		klog.Errorf("expect resource to be %s", podResource)
+		return nil
+	}
+
+	raw := ar.Request.Object.Raw
+	pod := corev1.Pod{}
+	deserializer := codecs.UniversalDeserializer()
+	if _, _, err := deserializer.Decode(raw, nil, &pod); err != nil {
+		klog.Error(err)
+		return toAdmissionResponse(err)
+	}
+	reviewResponse := v1beta1.AdmissionResponse{}
+	reviewResponse.Allowed = true
+	if pod.Name == "webhook-to-be-mutated" {
+		reviewResponse.Patch = []byte(podsInitContainerPatch)
+		pt := v1beta1.PatchTypeJSONPatch
+		reviewResponse.PatchType = &pt
+	}
+	return &reviewResponse
+}
+
 func main() {
 	var config Config
 
@@ -153,12 +179,45 @@ func main() {
 			r.Method,
 			r.Header.Get("Content-Type"),
 			r.URL))
+		var body []byte
 		if r.Body != nil {
 			if data, err := ioutil.ReadAll(r.Body); err == nil {
-				klog.Info(fmt.Sprintf("%s", data))
+				body = data
+			} else {
+				klog.Error(err)
+				w.WriteHeader(400)
+				return
 			}
 		}
-		w.WriteHeader(404)
+		klog.Info(fmt.Sprintf("%s", body))
+
+		requestedAdmissionReview := v1beta1.AdmissionReview{}
+		responseAdmissionReview := v1beta1.AdmissionReview{}
+
+		deserializer := codecs.UniversalDeserializer()
+		if _, _, err := deserializer.Decode(body, nil, &requestedAdmissionReview); err != nil {
+			klog.Error(err)
+			w.WriteHeader(400)
+			return
+		}
+		responseAdmissionReview.Response = mutate(requestedAdmissionReview)
+		// Return the same UID
+		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
+
+		klog.V(2).Info(fmt.Sprintf("sending response: %v", responseAdmissionReview.Response))
+
+		respBytes, err := json.Marshal(responseAdmissionReview)
+		if err != nil {
+			klog.Error(err)
+			w.WriteHeader(500)
+			return
+		}
+		if _, err := w.Write(respBytes); err != nil {
+			klog.Error(err)
+			w.WriteHeader(500)
+			return
+		}
+		w.WriteHeader(200)
 	})
 
 	if config.TLS {

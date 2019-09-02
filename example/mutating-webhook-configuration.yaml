@@ -1,5 +1,5 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
-kind: ValidatingWebhookConfiguration
+kind: MutatingWebhookConfiguration
 metadata: {name: putty}
 webhooks:
 - admissionReviewVersions: [v1beta1]
