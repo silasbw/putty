@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/admission/v1beta1"
@@ -132,7 +133,7 @@ func serveCRD(w http.ResponseWriter, r *http.Request) {
 	serve(w, r, admitCRD)
 }
 
-func mutate(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
+func mutate(ar v1beta1.AdmissionReview, patch string) *v1beta1.AdmissionResponse {
 	klog.V(2).Info("mutating pods")
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
 	if ar.Request.Resource != podResource {
@@ -149,11 +150,11 @@ func mutate(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	}
 	reviewResponse := v1beta1.AdmissionResponse{}
 	reviewResponse.Allowed = true
-	if pod.Name == "webhook-to-be-mutated" {
-		reviewResponse.Patch = []byte(podsInitContainerPatch)
-		pt := v1beta1.PatchTypeJSONPatch
-		reviewResponse.PatchType = &pt
-	}
+
+	reviewResponse.Patch = []byte(patch)
+	pt := v1beta1.PatchTypeJSONPatch
+	reviewResponse.PatchType = &pt
+
 	return &reviewResponse
 }
 
@@ -173,6 +174,9 @@ func main() {
 	http.HandleFunc("/custom-resource", serveCustomResource)
 	http.HandleFunc("/mutating-custom-resource", serveMutateCustomResource)
 	http.HandleFunc("/crd", serveCRD)
+
+	jsonPatch := os.Getenv("JSON_PATCH")
+	klog.Info(fmt.Sprintf("Configured with JSON patch: %s", jsonPatch))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		klog.Info(fmt.Sprintf("Unexpected request: %s %s %s",
@@ -200,7 +204,7 @@ func main() {
 			w.WriteHeader(400)
 			return
 		}
-		responseAdmissionReview.Response = mutate(requestedAdmissionReview)
+		responseAdmissionReview.Response = mutate(requestedAdmissionReview, jsonPatch)
 		// Return the same UID
 		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
 

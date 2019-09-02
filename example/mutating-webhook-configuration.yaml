@@ -48,7 +48,10 @@ webhooks:
 
       '
     service: {name: putty, namespace: default}
-  name: putty-example.kubernetes.io
+  name: putty-example.sbw.io
+  objectSelector:
+    matchLabels:
+      putty.sbw.io: 'true'
   rules:
   - apiGroups: ['*']
     apiVersions: ['*']

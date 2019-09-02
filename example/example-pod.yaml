@@ -4,6 +4,7 @@ metadata:
   name: example-pod
   labels:
     app: myapp
+    putty.sbw.io: "true"
 spec:
   containers:
   - name: example-container
