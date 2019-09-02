@@ -1,8 +1,12 @@
-# Kubernetes External Admission Webhook Test Image
+# Putty for Kubernetes
 
-The image tests MutatingAdmissionWebhook and ValidatingAdmissionWebhook. After deploying
-it to kubernetes cluster, administrator needs to create a ValidatingWebhookConfiguration
-in kubernetes cluster to register remote webhook admission controllers.
+Interpose on Kubernetes operations and apply a [JSON patch](http://jsonpatch.com/) to select resources.
+
+## Examples
+
+### Add [initContainer](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+
+[example/] adds an initContainer to every Pod with a label matching `putt.sbw.io: "true"`.
 
 ## Build
 
@@ -29,6 +33,11 @@ docker build -t silasbw/putty:latest .
 docker push silasbw/putty:latest
 ```
 
-## Notes
+## Implementation
 
-https://github.com/caesarxuchao/example-webhook-admission-controller
+Putty is a [Dynamic MutatingAdmissionWebhook controller](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/).
+
+## Related
+
+* [Deprecated Admission Webhook example](https://github.com/caesarxuchao/example-webhook-admission-controller)
+* [MutatingWebhookConfiguration reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#mutatingwebhookconfiguration-v1beta1-admissionregistration-k8s-io)
