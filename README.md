@@ -39,5 +39,6 @@ Putty is a [Dynamic MutatingAdmissionWebhook controller](https://kubernetes.io/d
 
 ## Related
 
+* This code is based on the [Kubernetes External Admission Webhook Test Image](https://github.com/kubernetes/kubernetes/blob/v1.13.0/test/images/webhook)
 * [Deprecated Admission Webhook example](https://github.com/caesarxuchao/example-webhook-admission-controller)
 * [MutatingWebhookConfiguration reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#mutatingwebhookconfiguration-v1beta1-admissionregistration-k8s-io)
