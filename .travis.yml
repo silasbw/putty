@@ -1,7 +1,11 @@
 language: go
-
 go:
   - "1.12"
-
 env:
   - GO111MODULE=on
+before_script:
+  - go install golang.org/x/lint/golint
+script:
+  - go vet ./...
+  - golint  -set_exit_status ./...
+  - go test -v ./...
