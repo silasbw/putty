@@ -50,7 +50,7 @@ func (c *Config) addFlags() {
 		"File containing Putty patch definition.")
 }
 
-func configTLS(config Config) *tls.Config {
+func loadTLS(config Config) *tls.Config {
 	sCert, err := tls.LoadX509KeyPair(config.CertFile, config.KeyFile)
 	if err != nil {
 		klog.Fatal(err)
