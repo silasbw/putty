@@ -3,5 +3,17 @@ kind: ConfigMap
 metadata:
   name: putty
 data:
-  JSON_PATCH: |
-    [{"op":"add","path":"/spec/initContainers","value":[], "resources":{}}, {"op":"add","path":"/spec/initContainers/-","value":{"image":"busybox:1.28","name":"webhook-added-init-container", "command": ["sh", "-c", "echo The app is running! && sleep 10"], "resources":{}}}]
+  PUTTY_PATCH: |
+    {
+      "initializePatches": [
+        {
+          "path": "/spec/initContainers/0",
+          "patch": [
+            {"op":"add","path":"/spec/initContainers","value":[], "resources":{}}
+          ]
+        }
+      ],
+      "patch": [
+        {"op":"add","path":"/spec/initContainers/-","value":{"image":"busybox:1.28","name":"webhook-added-init-container", "command": ["sh", "-c", "echo The app is running! && sleep 10"], "resources":{}}}
+      ]
+    }
