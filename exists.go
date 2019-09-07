@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// Check if a value exists in object at path.
 func Exists(object interface{}, path []string) bool {
 	value := reflect.Indirect(reflect.ValueOf(object))
 	for _, piece := range path {
