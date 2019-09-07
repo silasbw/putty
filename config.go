@@ -12,18 +12,20 @@ import (
 	"k8s.io/klog"
 )
 
+// PuttyInitializePatch contains JSON patches to apply if a field does not exist.
 type PuttyInitializePatch struct {
 	Path string `json:"path"`
 	PathPieces []string `json:"-"`
 	Patch []interface{} `json:"patch"`
 }
 
+// PuttyPatch contains JSON patches to apply.
 type PuttyPatch struct {
 	InitializePatches []PuttyInitializePatch `json:"initializePatches"`
 	Patch []interface{} `json:"patch"`
 }
 
-// Config contains the server (the webhook) cert and key.
+// Config contains server configuration.
 type Config struct {
 	CertFile string
 	KeyFile  string
