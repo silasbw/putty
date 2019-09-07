@@ -1,27 +1,27 @@
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package main
 
 import (
 	"crypto/tls"
 	"flag"
-
+	"fmt"
+	"encoding/json"
+	"io/ioutil"
+	"os"
+	"strings"
+	
 	"k8s.io/klog"
 )
+
+type PuttyInitializePatch struct {
+	Path string `json:"path"`
+	PathPieces []string `json:"-"`
+	Patch []interface{} `json:"patch"`
+}
+
+type PuttyPatch struct {
+	InitializePatches []PuttyInitializePatch `json:"initializePatches"`
+	Patch []interface{} `json:"patch"`
+}
 
 // Config contains the server (the webhook) cert and key.
 type Config struct {
@@ -29,6 +29,8 @@ type Config struct {
 	KeyFile  string
 	TLS bool
 	Port string
+	PatchFile string
+	Patch PuttyPatch
 }
 
 func (c *Config) addFlags() {
@@ -39,7 +41,11 @@ func (c *Config) addFlags() {
 	flag.StringVar(&c.KeyFile, "tls-private-key-file", "key.pem", ""+
 		"File containing the default x509 private key matching --tls-cert-file.")
 	flag.BoolVar(&c.TLS, "tls", true, "Enable TLS")
+
 	flag.StringVar(&c.Port, "port", "443", "Port")
+
+	flag.StringVar(&c.PatchFile, "patch-file", "", ""+
+		"File containing Putty patch definition.")
 }
 
 func configTLS(config Config) *tls.Config {
@@ -49,7 +55,35 @@ func configTLS(config Config) *tls.Config {
 	}
 	return &tls.Config{
 		Certificates: []tls.Certificate{sCert},
-		// TODO: uses mutual tls after we agree on what cert the apiserver should use.
-		// ClientAuth:   tls.RequireAndVerifyClientCert,
 	}
+}
+
+func loadPatch(config *Config) {
+	var data []byte
+
+	if config.PatchFile != "" {
+		var err error
+		data, err = ioutil.ReadFile(config.PatchFile)
+		if err != nil {
+			klog.Fatal(err)
+		}
+	} else if os.Getenv("PUTTY_PATCH") != "" {
+		data = []byte(os.Getenv("PUTTY_PATCH"))
+	} else {
+		klog.Fatal("Missing -patch-file or PUTTY_PATCH")
+	}
+	klog.Info(fmt.Sprintf("Configured with JSON patch: %s", data))
+
+	var puttyPatch PuttyPatch
+	json.Unmarshal(data, &puttyPatch)	
+
+	for index, initializePatch := range puttyPatch.InitializePatches {
+		var path []string
+		for _, piece := range strings.Split(initializePatch.Path, "/")[1:] {
+			path = append(path, strings.Title(piece))
+		}
+		puttyPatch.InitializePatches[index].PathPieces = path
+	}
+
+	config.Patch = puttyPatch
 }

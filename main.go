@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/admission/v1beta1"
@@ -24,7 +23,7 @@ func toAdmissionResponse(err error) *v1beta1.AdmissionResponse {
 	}
 }
 
-func mutate(ar v1beta1.AdmissionReview, patch string) *v1beta1.AdmissionResponse {
+func mutate(ar v1beta1.AdmissionReview, puttyPatch PuttyPatch) *v1beta1.AdmissionResponse {
 	klog.V(2).Info("mutating pods")
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
 	if ar.Request.Resource != podResource {
@@ -42,7 +41,21 @@ func mutate(ar v1beta1.AdmissionReview, patch string) *v1beta1.AdmissionResponse
 	reviewResponse := v1beta1.AdmissionResponse{}
 	reviewResponse.Allowed = true
 
-	reviewResponse.Patch = []byte(patch)
+	var patch []interface{}
+	for _, initializePatch := range puttyPatch.InitializePatches {
+		if !Exists(pod, initializePatch.PathPieces) {
+			patch = append(patch, initializePatch.Patch ...)
+		}
+	}
+	patch = append(patch, puttyPatch.Patch...)
+
+	data, err := json.Marshal(patch)
+	if err != nil {
+		klog.Error(err)
+		return toAdmissionResponse(err)
+	}
+
+	reviewResponse.Patch = data
 	pt := v1beta1.PatchTypeJSONPatch
 	reviewResponse.PatchType = &pt
 
@@ -54,9 +67,7 @@ func main() {
 
 	config.addFlags()
 	flag.Parse()
-
-	jsonPatch := os.Getenv("JSON_PATCH")
-	klog.Info(fmt.Sprintf("Configured with JSON patch: %s", jsonPatch))
+	loadPatch(&config)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		klog.Info(fmt.Sprintf("Unexpected request: %s %s %s",
@@ -84,7 +95,7 @@ func main() {
 			w.WriteHeader(400)
 			return
 		}
-		responseAdmissionReview.Response = mutate(requestedAdmissionReview, jsonPatch)
+		responseAdmissionReview.Response = mutate(requestedAdmissionReview, config.Patch)
 		// Return the same UID
 		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
 
