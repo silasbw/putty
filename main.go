@@ -13,6 +13,8 @@ import (
 	"k8s.io/klog"
 )
 
+var config Config
+
 // toAdmissionResponse is a helper function to create an AdmissionResponse
 // with an embedded error
 func toAdmissionResponse(err error) *v1beta1.AdmissionResponse {
@@ -62,64 +64,66 @@ func mutate(ar v1beta1.AdmissionReview, puttyPatch PuttyPatch) *v1beta1.Admissio
 	return &reviewResponse
 }
 
-func main() {
-	var config Config
+func handler(w http.ResponseWriter, r *http.Request) {
+	klog.V(2).Info(fmt.Sprintf("handling request: %s %s %s",
+		r.Method,
+		r.URL,
+		r.Header.Get("Content-Type")))
 
+	if r.Body == nil {
+		klog.Warning("Empty Request.Body")
+		w.WriteHeader(400)
+		return
+	}
+
+	var body []byte
+	if data, err := ioutil.ReadAll(r.Body); err != nil {
+		body = data
+	} else {
+		klog.Error(err)
+		w.WriteHeader(400)
+		return
+	}
+
+	requestedAdmissionReview := v1beta1.AdmissionReview{}
+	deserializer := codecs.UniversalDeserializer()
+	if _, _, err := deserializer.Decode(body, nil, &requestedAdmissionReview); err != nil {
+		klog.Error(err)
+		w.WriteHeader(400)
+		return
+	}
+
+	responseAdmissionReview := v1beta1.AdmissionReview{}
+	responseAdmissionReview.Response = mutate(requestedAdmissionReview, config.Patch)
+	// https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#response
+	responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
+
+	klog.V(2).Info(fmt.Sprintf("sending response: %v", responseAdmissionReview.Response))
+	respBytes, err := json.Marshal(responseAdmissionReview)
+	if err != nil {
+		klog.Error(err)
+		w.WriteHeader(500)
+		return
+	}
+	if _, err := w.Write(respBytes); err != nil {
+		klog.Error(err)
+		w.WriteHeader(500)
+		return
+	}
+	w.WriteHeader(200)
+}
+
+func main() {
 	config.addFlags()
 	flag.Parse()
 	loadPatch(&config)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		klog.Info(fmt.Sprintf("Unexpected request: %s %s %s",
-			r.Method,
-			r.Header.Get("Content-Type"),
-			r.URL))
-		var body []byte
-		if r.Body != nil {
-			if data, err := ioutil.ReadAll(r.Body); err == nil {
-				body = data
-			} else {
-				klog.Error(err)
-				w.WriteHeader(400)
-				return
-			}
-		}
-		klog.Info(fmt.Sprintf("%s", body))
-
-		requestedAdmissionReview := v1beta1.AdmissionReview{}
-		responseAdmissionReview := v1beta1.AdmissionReview{}
-
-		deserializer := codecs.UniversalDeserializer()
-		if _, _, err := deserializer.Decode(body, nil, &requestedAdmissionReview); err != nil {
-			klog.Error(err)
-			w.WriteHeader(400)
-			return
-		}
-		responseAdmissionReview.Response = mutate(requestedAdmissionReview, config.Patch)
-		// Return the same UID
-		responseAdmissionReview.Response.UID = requestedAdmissionReview.Request.UID
-
-		klog.V(2).Info(fmt.Sprintf("sending response: %v", responseAdmissionReview.Response))
-
-		respBytes, err := json.Marshal(responseAdmissionReview)
-		if err != nil {
-			klog.Error(err)
-			w.WriteHeader(500)
-			return
-		}
-		if _, err := w.Write(respBytes); err != nil {
-			klog.Error(err)
-			w.WriteHeader(500)
-			return
-		}
-		w.WriteHeader(200)
-	})
-
+	http.HandleFunc("/", handler)
 	if config.TLS {
 		klog.Info(fmt.Sprintf("Listening on :%s with TLS", config.Port))
 		server := &http.Server{
 			Addr: fmt.Sprintf(":%s", config.Port),
-			TLSConfig: configTLS(config),
+			TLSConfig: loadTLS(config),
 		}
 		klog.Fatal(server.ListenAndServeTLS("", ""))
 	} else {
